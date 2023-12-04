@@ -1,0 +1,6 @@
+
+.DS_Store
+*.pyc
+*.pt
+*.csv
+*.gz

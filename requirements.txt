@@ -1,0 +1,12 @@
+Ipython~=8.15.0
+matplotlib~=3.8.0
+numpy~=1.26.0
+scikit-learn~=1.2.2
+pandas~=2.1.1
+joblib~=1.2.0
+torchaudio~=2.1.1
+transformers~=4.32.1
+swifter
+pyarrow>=14.0.1
+torch>=2.1.1
+```
