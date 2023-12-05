@@ -74,14 +74,13 @@ def report_time(start_time):
     return time.time()
 
 def main():
-    # device = (
-    #     "cuda"
-    #     if torch.cuda.is_available()
-    #     else "mps"
-    #     if torch.backends.mps.is_available()
-    #     else "cpu"
-    # )
-    device = "cpu"
+    device = (
+        "cuda"
+        if torch.cuda.is_available()
+        else "mps"
+        if torch.backends.mps.is_available()
+        else "cpu"
+    )
     print(f"Using {device} device")
 
     # The following lines are required to enable the mps backend
@@ -100,7 +99,7 @@ def main():
     else:
         # get blogs dataset
         print("Reading CSV...")
-        blogs = pd.read_csv(Path("datasets/blog8965.csv")).dropna()
+        blogs = pd.read_csv(Path("datasets/blog8965.csv.gz")).dropna()
         s = report_time(s)
         print("Filtering blogs...")
         blogs = blogs[blogs["text"].swifter.apply(str.split).swifter.apply(len) > 38]
@@ -152,8 +151,8 @@ def main():
         # scheduler.step()
         s = report_time(s)
 
-    if SAVE_MODEL:
-        torch.save(verifier.state_dict(), "siamese_network.pt")
+        if SAVE_MODEL:
+            torch.save(verifier.state_dict(), "siamese_network.pt")
 
 
 if __name__ == '__main__':
