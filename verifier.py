@@ -5,6 +5,7 @@ from torchaudio.transforms import Spectrogram
 from transformers import DistilBertModel
 
 from constants import *
+from multiprocessing import Pool
 
 
 class Verifier(nn.Module):
@@ -44,6 +45,7 @@ class Verifier(nn.Module):
         x = x.flatten(1)
         # Shape: (batch_size, hidden_size=768 * 257 = 197376)
         logits = self.linear_gelu_stack(x)
+        # Shape: (batch_size, final_vector_size=128)
         return logits
 
     def forward(self, x1, x2):

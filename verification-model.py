@@ -27,7 +27,7 @@ os.environ['PYTORCH_ENABLE_MPS_FALLBACK'] = '1'
 # https://docs.google.com/document/d/1DMt0IlimTDa8RaUJzh41m7DST-P0NdZ1HZibs5m6fPw/edit
 
 
-def train(log_interval: int, model: Verifier, device, train_loader, optimizer, epoch):
+def train(model: Verifier, device, train_loader, optimizer, epoch):
     model.train()
 
     criterion = nn.CosineEmbeddingLoss()
@@ -42,18 +42,18 @@ def train(log_interval: int, model: Verifier, device, train_loader, optimizer, e
         loss = criterion(output1, output2, targets)
         loss.backward()
         optimizer.step()
-        if batch_idx % log_interval == 0:
-            print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
-                epoch, batch_idx * len(input_ids_1), len(train_loader.dataset),
-                       100. * batch_idx / len(train_loader), loss.item()))
+        print(f"Train Epoch: {epoch} "
+              f"[{batch_idx * len(input_ids_1)}/{len(train_loader.dataset)} "
+              f"({100. * batch_idx / len(train_loader):.0f}%)]"
+              f"\tLoss: {loss.sum().item():.6f}")
 
 
-def test(model, device, test_loader):
+def test(model, device, test_loader: DataLoader):
     model.eval()
     test_loss = 0
 
     criterion = nn.CosineEmbeddingLoss()
-
+    i = 0
     with torch.no_grad():
         for ((input_ids_1, attention_mask_1), (input_ids_2, attention_mask_2), targets) in test_loader:
             input_ids_1, attention_mask_1 = input_ids_1.to(device), attention_mask_1.to(device)
@@ -63,8 +63,8 @@ def test(model, device, test_loader):
             output1, output2 = output
             print(f"\tTarget: {targets}")
             test_loss += criterion(output1, output2, targets).sum().item()  # sum up batch loss
-
-    test_loss /= len(test_loader.dataset)
+            i += 1
+    test_loss /= i
 
     print('\nTest set: Average loss: {:.4f}\n'.format(test_loss))
 
@@ -73,12 +73,13 @@ def report_time(start_time):
     print(f"Time elapsed: {time.time() - start_time:.4f}")
     return time.time()
 
+
 def main():
     device = (
         "cuda"
         if torch.cuda.is_available()
-        else "mps"
-        if torch.backends.mps.is_available()
+        # else "mps"
+        # if torch.backends.mps.is_available()
         else "cpu"
     )
     print(f"Using {device} device")
@@ -93,9 +94,10 @@ def main():
         print("Loading training set...")
         train_dataset = torch.load("train_dataset.pt")
         s = report_time(s)
-        print("Loading test set...")
-        test_dataset = torch.load("test_dataset.pt")
-        s = report_time(s)
+        if DO_TESTING:
+            print("Loading test set...")
+            test_dataset = torch.load("test_dataset.pt")
+            s = report_time(s)
     else:
         # get blogs dataset
         print("Reading CSV...")
@@ -118,14 +120,15 @@ def main():
         test_dataset = Matcher(blogs, train=False, tokenizer=AutoTokenizer.from_pretrained("distilbert-base-uncased"))
         s = report_time(s)
 
-        print("Saving train dataset...")
+        print("Saving test dataset...")
         torch.save(test_dataset, "test_dataset.pt")
         s = report_time(s)
 
     # Create the dataloaders
     print("Creating dataloaders...")
-    train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=BATCH_SIZE, shuffle=True)
-    test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=BATCH_SIZE, shuffle=True)
+    train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=BATCH_SIZE, shuffle=True, num_workers=NUM_WORKERS)
+    if DO_TESTING:
+        test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=BATCH_SIZE, shuffle=True, num_workers=NUM_WORKERS)
     s = report_time(s)
 
     verifier = Verifier().to(device)
@@ -146,13 +149,19 @@ def main():
     print("Beginning training...")
     for epoch in range(1, NUM_EPOCHS + 1):
         print("Epoch " + str(epoch))
-        train(LOG_INTERVAL, verifier, device, train_loader, optimizer, epoch)
-        test(verifier, device, test_loader)
+        train(verifier, device, train_loader, optimizer, epoch)
         # scheduler.step()
         s = report_time(s)
 
-        if SAVE_MODEL:
+        if DO_TESTING and epoch % TEST_INTERVAL == 0:
+            print("Testing model...")
+            test(verifier, device, test_loader)
+            s = report_time(s)
+
+        if epoch % SAVE_INTERVAL == 0:
+            print("Saving model...")
             torch.save(verifier.state_dict(), "siamese_network.pt")
+            s = report_time(s)
 
 
 if __name__ == '__main__':

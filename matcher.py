@@ -5,17 +5,19 @@ import torch
 from pandas import DataFrame
 from torch.utils.data import Dataset
 from constants import *
+import time
+import swifter
+import pandas as pd
 
 
 class Matcher(Dataset):
-    def __init__(self, blogs:DataFrame, train: bool, tokenizer):
+    def __init__(self, blogs: DataFrame, train: bool, tokenizer):
         super().__init__()
 
         def random_truncate(text):
-            appx_length = text.count(" ")
-            if appx_length >= 512:
-                split = text.split()
-                length = len(split)
+            split = text.split()
+            length = len(split)
+            if length >= 512:
                 start = np.random.randint(length - 511)
                 text = ' '.join(split[start:start+511])
             return text
@@ -24,13 +26,13 @@ class Matcher(Dataset):
         # get the train or test splits
         s = time.time()
         print("\tGetting split...")
-        self.blogs = blogs[(blogs["split"] == "train") == train].drop("split", axis=1).reset_index(drop=True)
+        blogs = blogs[(blogs["split"] == "train") == train].drop("split", axis=1).reset_index(drop=True)
         s = report_time(s)
         print("\tTo numpy...")
-        self.dataset = blogs.to_numpy()
+        dataset = blogs.to_numpy()
         s = report_time(s)
         print("\tGetting authors...")
-        self.authors = np.unique(self.dataset[:, 0]).astype(int)
+        self.authors = np.unique(dataset[:, 0]).astype(int)
         s = report_time(s)
 
         print("\tTruncating...")
@@ -43,24 +45,13 @@ class Matcher(Dataset):
 
         print("\tGrouping examples...")
         self.grouped_examples = {}
-        self.group_examples()
+        for author_id in self.authors:
+            self.grouped_examples[author_id] = np.where((dataset[:, 0] == author_id))[0]
+
         report_time(s)
 
-    def group_examples(self):
-        """
-            To ease the accessibility of data based on the author, we will use `group_examples` to group
-            examples based on author.
-
-            Every key in `grouped_examples` corresponds to an author. For every key in
-            `grouped_examples`, every value will be a list of each index for the
-            dataset that correspond to that key.
-        """
-
-        for author_id in self.authors:
-            self.grouped_examples[author_id] = np.where((self.dataset[:, 0] == author_id))[0]
-
     def __len__(self):
-        return len(self.dataset)
+        return 64
 
     def __getitem__(self, index):
         """
@@ -88,7 +79,9 @@ class Matcher(Dataset):
         index_1 = self.grouped_examples[selected_author][random_index_1]
 
         # get the first blog
-        text_1 = self.data[index_1]
+        # blog contained in /datasets/authors/{author_id}.csv at index {index_1}
+        blogs_by_author = pd.read_csv(f"datasets/authors/{selected_author}.csv")
+        text_1 = blogs_by_author.iloc[index_1]["text"]
 
         # same class
         if index % 2 == 0:
