@@ -6,3 +6,5 @@
 *.gz
 *.xml
 *.zip
+models/bert/config.json
+models/bert/pytorch_model.bin

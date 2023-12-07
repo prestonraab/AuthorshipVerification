@@ -2,7 +2,7 @@ import os
 import time
 
 os.environ['PYTORCH_ENABLE_MPS_FALLBACK'] = '1'
-os.environ['TOKENIZERS_PARALLELISM'] = 'true'
+os.environ['TOKENIZERS_PARALLELISM'] = 'false'
 # Define constants
 FINAL_VECTOR_SIZE = 128
 NUM_EPOCHS = 2000
