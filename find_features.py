@@ -136,7 +136,7 @@ def find_features():
     train_loader = DataLoader(matcher, batch_size=200, shuffle=True, num_workers=3)
     test_loader = DataLoader(matcher, batch_size=200, shuffle=True, num_workers=3)
 
-    best20 = set(range(20))
+    best20 = set()
     epoch = 0
     perceptron_stats = {i: 0 for i in range(768)}
     while True:
