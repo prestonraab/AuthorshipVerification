@@ -89,7 +89,7 @@ def train_perceptrons(perceptrons, train_loader, device):
             x2 = x2.to(device)
             y = y.to(device)
             for index, perceptron in enumerate(perceptrons):
-                output = perceptron(x1[:,index::768], x2[:,index::768])
+                output = perceptron(x1[:][ index::768], x2[:, index::768])
                 loss = criterion(output, y)
                 loss.backward()
 
@@ -133,8 +133,8 @@ def find_features():
 
     author_folder = Path("datasets/authors")
     matcher = Matcher(author_folder)
-    train_loader = DataLoader(matcher, batch_size=200, shuffle=True, num_workers=3)
-    test_loader = DataLoader(matcher, batch_size=200, shuffle=True, num_workers=3)
+    train_loader = DataLoader(matcher, batch_size=BATCH_SIZE, shuffle=True)#, num_workers=3)
+    test_loader = DataLoader(matcher, batch_size=BATCH_SIZE, shuffle=True)#, num_workers=3)
 
     best20 = set()
     epoch = 0

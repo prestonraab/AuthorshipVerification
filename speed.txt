@@ -1,0 +1,4 @@
+No workers: Finished in 263.0487308502197 seconds
+2 workers:  Finished in 185.78153705596924 seconds
+3 workers:  Finished in 183.20887780189514 seconds
+4 workers: Finished in 191.43251991271973 seconds
