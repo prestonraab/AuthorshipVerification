@@ -2,3 +2,29 @@ No workers: Finished in 263.0487308502197 seconds
 2 workers:  Finished in 185.78153705596924 seconds
 3 workers:  Finished in 183.20887780189514 seconds
 4 workers: Finished in 191.43251991271973 seconds
+
+2 workers, batch size 400 Finished in 200.95065188407898 seconds
+2 workers, batch size 300 Finished in 201.70703172683716 seconds
+2 workers, batch size 100 Finished in 165.91557788848877 seconds
+2 workers, batch size 60  Finished in 147.2382 seconds
+2 workers, batch size 50  Finished in 133.63657236099243 seconds
+2 workers, batch size 40  Finished in 149.1813 seconds
+2 workers, batch size 25  Finished in 176.0288062095642 seconds
+
+3 workers, batch size 60 Finished in 144 seconds
+3 workers, batch size 50 Finished in _129_ seconds
+3 workers, batch size 40 Finished in 137 seconds
+
+4 workers, batch size 50 Finished in _124_ seconds
+6 workers, batch size 50 Finished in 164.4996 seconds
+8 workers, batch size 50 Finished in 161.3067 seconds
+
+2 workers, batch size 50, Adadelta Finished in 140.5666 seconds
+2 workers, batch size 50 Adam      Finished in 140.2808 seconds
+
+Small model: Finished in 115.4113 seconds
+Massive model (3 hidden): Finished in 301.1380 seconds
+Massive model (2 hidden): Finished in 296.4355 seconds
+
+Bigger model 3 workers batch 50 Finished in 178.2644 seconds
+Bigger model 4 workers batch 50 Finished in 185.6641 seconds

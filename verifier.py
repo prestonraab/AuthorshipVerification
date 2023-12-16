@@ -19,8 +19,10 @@ class Verifier(nn.Module):
         self.linear_gelu_stack = nn.Sequential(
             nn.Linear(768 * FFT_OUT, HIDDEN_SIZE),
             nn.GELU(),
+            nn.Dropout(0.1),
             nn.Linear(HIDDEN_SIZE, HIDDEN_SIZE),
             nn.GELU(),
+            nn.Dropout(0.1),
             nn.Linear(HIDDEN_SIZE, FINAL_VECTOR_SIZE)
         )
         # initialize the weights

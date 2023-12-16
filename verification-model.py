@@ -38,12 +38,14 @@ def train(model: Verifier, device, train_loader, optimizer, epoch, s):
         loss.backward()
 
         optimizer.step()
-        print(f"Train Epoch: {epoch} "
-              f"[{batch_idx * len(targets)}/{len(train_loader.dataset)} "
-              f"({100. * batch_idx / len(train_loader):.0f}%)]"
-              f"\tLoss: {loss.item():.6f}")
+        if batch_idx % LOG_INTERVAL == 0:
+            print(f"Train Epoch: {epoch} "
+                  f"[{batch_idx * len(targets):5.0f}/{len(train_loader.dataset)} "
+                  f"({100. * batch_idx / len(train_loader):.0f}%)]"
+                  f"\tLoss: {loss.item():.4f}"
+                  f"\t{'#' * int(100*loss.item())}")
     print("########################\n" * 3)
-    print(f"Finished in {time.time() - start} seconds")
+    print(f"Finished in {time.time() - start:.4f} seconds")
     print("########################\n" * 3)
 
 def test(model, device, test_loader: DataLoader):
@@ -111,6 +113,7 @@ def main():
         print("Loading model...")
         verifier.load_state_dict(torch.load("siamese_network.pt"))
         s = report_time(s)
+
 
     optimizer = torch.optim.AdamW(verifier.parameters())
     # optimizer = torch.optim.Adadelta(verifier.parameters(), lr=LEARNING_RATE)
