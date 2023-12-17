@@ -33,7 +33,8 @@ class Matcher(Dataset):
         file = random.choice(self.test_files) if self.test else self.train_files[index]
         author = int(file.stem.split("_")[0])
         group = self.groups[author]
-        first_vect = random.choice(torch.load(file))
+        with open(file, 'rb') as f:
+            first_vect = random.choice(torch.load(f))
 
         cls = (index % 2) * 2 - 1
         if cls == 1:
@@ -43,7 +44,8 @@ class Matcher(Dataset):
             while other_file in group:
                 other_file = random.choice(self.test_files if self.test else self.train_files)
 
-        other_vect = random.choice(torch.load(other_file))
+        with open(other_file, 'rb') as f:
+            other_vect = random.choice(torch.load(f))
         return first_vect, other_vect, torch.tensor(cls, dtype=torch.float)
 
 
