@@ -16,6 +16,9 @@ No workers: Finished in 263.0487308502197 seconds
 3 workers, batch size 40 Finished in 137 seconds
 
 4 workers, batch size 50 Finished in _124_ seconds
+4 workers, batch size 50 with dropout Finished in 128.0195 seconds
+
+
 6 workers, batch size 50 Finished in 164.4996 seconds
 8 workers, batch size 50 Finished in 161.3067 seconds
 
