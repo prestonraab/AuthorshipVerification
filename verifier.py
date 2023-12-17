@@ -57,5 +57,5 @@ class Verifier(nn.Module):
 
     def init_weights(self, m):
         if isinstance(m, nn.Linear):
-            torch.nn.init.xavier_uniform_(m.weight)
-            m.bias.data.fill_(0.01)
+            torch.nn.init.xavier_uniform_(m.weight, 0.001)
+            m.bias.data.fill_(0.001)
