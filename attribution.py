@@ -36,14 +36,16 @@ def accuracy_for_N_authors(author_files, device, siamese_network):
             print(index)
         for vect in author_vects[author]:
             total += 1
-            similarities = [1 - torch.cosine_similarity(vect.unsqueeze(0), average.unsqueeze(0)) for average in averages]
+            similarities = [torch.cosine_similarity(vect.unsqueeze(0), average.unsqueeze(0)) for average in averages]
             # subtract the average distance for each author
-            similarities = [similarity - average_distances_for_authors[i][0] for i, similarity in enumerate(similarities)]
+            # similarities = [similarity - average_distances_for_authors[i][0] for i, similarity in enumerate(similarities)]
             # divide by the standard deviation for each author
-            similarities = [abs(similarity / average_distances_for_authors[i][1]) for i, similarity in enumerate(similarities)]
+            # similarities = [abs(similarity / average_distances_for_authors[i][1]) for i, similarity in enumerate(similarities)]
 
-            if similarities.index(min(similarities)) == index:
+            if similarities.index(max(similarities)) == index:
                 correct += 1
+    print(f"Correct: {correct}")
+    print(f"Total: {total}")
     return correct, total
 
 
