@@ -91,6 +91,10 @@ def test(model, simple_model, device, test_loader: DataLoader):
     simple_model.eval()
     test_loss = 0
     num_correct = 0
+    num_true_true= 0
+    num_true_false = 0
+    num_false_true = 0
+    num_false_false = 0
     num_total = 0
 
     criterion = nn.CosineEmbeddingLoss()
@@ -103,29 +107,29 @@ def test(model, simple_model, device, test_loader: DataLoader):
             targets = targets.to(device)
             output = model(x1, x2)
             output1, output2 = output
-            first_0_target = None
-            for j, target in enumerate(targets):
-                if target == -1:
-                    first_0_target = j
-                    break
-            print(f"\tTarget: {targets}")
             test_loss += criterion(output1, output2, targets).item()
 
             cos = cosine(output1, output2)
 
             simple_output = simple_model(cos.unsqueeze(1))
+            num_true_true += torch.sum(((simple_output > 0.5) == ((targets + 1.0) // 2 ).unsqueeze(1)).float() * (targets == 1.0).unsqueeze(1)).item()
+            num_true_false += torch.sum(((simple_output > 0.5) == ((targets + 1.0) // 2 ).unsqueeze(1)).float() * (targets == -1.0).unsqueeze(1)).item()
+            num_false_true += torch.sum(((simple_output > 0.5) != ((targets + 1.0) // 2 ).unsqueeze(1)).float() * (targets == 1.0).unsqueeze(1)).item()
+            num_false_false += torch.sum(((simple_output > 0.5) != ((targets + 1.0) // 2 ).unsqueeze(1)).float() * (targets == -1.0).unsqueeze(1)).item()
             num_correct += torch.sum(((simple_output > 0.5) == ((targets + 1.0) // 2 ).unsqueeze(1)).float()).item()
 
-            print(f"\nOutput 1:\n{output1[first_0_target]}")
-            print(f"\nOutput 2:\n{output2[first_0_target]}")
-            zero_loss = criterion(output1[first_0_target], output2[first_0_target], torch.tensor(-1).to(device))
             print(f"\tLoss: {test_loss}")
-            print(f"\tZero loss: {zero_loss}")
             i += 1
     test_loss /= i
 
     print('\nTest set: Average loss: {:.4f}\n'.format(test_loss))
     print(f"Accuracy: {num_correct / num_total:.4f}")
+    print(f"Correct: {num_correct}")
+    print(f"Total: {num_total}")
+    print(f"True True: {num_true_true}")
+    print(f"True False: {num_true_false}")
+    print(f"False True: {num_false_true}")
+    print(f"False False: {num_false_false}")
 
 
 def report_time(start_time):
@@ -179,6 +183,7 @@ def main():
 
     print("Testing model...")
     test(verifier, simple_model, device, test_loader)
+    return
 
     # scheduler = StepLR(optimizer, step_size=1, gamma=GAMMA)
     print("Beginning training...")

@@ -24,12 +24,12 @@ def accuracy_for_N_authors(author_files, device, siamese_network):
         averages.append(author_vects[author].mean(0))
 
     average_distances_for_authors = []
-    for author in author_vects:
-        for vect in author_vects[author]:
-            distances = [torch.cosine_similarity(vect.unsqueeze(0), average.unsqueeze(0)) for average in averages]
-            average = sum(distances) / len(distances)
-            standard_deviation = torch.std(torch.tensor(distances))
-            average_distances_for_authors.append((average, standard_deviation))
+    for index, author in enumerate(author_vects):
+        distances = [torch.cosine_similarity(vect.unsqueeze(0), averages[index].unsqueeze(0)) ** 2 for vect in author_vects[author]]
+        average = (sum(distances) ** 0.5) / len(distances)
+        average_distances_for_authors.append(average)
+
+    print(average_distances_for_authors)
 
     for index, author in enumerate(author_vects):
         if index % (len(author_vects)//10) == 0:
@@ -37,10 +37,8 @@ def accuracy_for_N_authors(author_files, device, siamese_network):
         for vect in author_vects[author]:
             total += 1
             similarities = [torch.cosine_similarity(vect.unsqueeze(0), average.unsqueeze(0)) for average in averages]
-            # subtract the average distance for each author
-            # similarities = [similarity - average_distances_for_authors[i][0] for i, similarity in enumerate(similarities)]
-            # divide by the standard deviation for each author
-            # similarities = [similarity / average_distances_for_authors[i][1] for i, similarity in enumerate(similarities)]
+            # divide by average distance for author
+            similarities = [similarity / average_distances_for_authors[i][0] for i, similarity in enumerate(similarities)]
 
             if similarities.index(max(similarities)) == index:
                 correct += 1
@@ -93,16 +91,17 @@ def main():
     )
     print(f"Using {device} device")
 
-    author_folder = Path("datasets/authors")
+    author_folder = Path("/Users/prestonraab/GitHub/Ling/AuthorshipVerification/code/datasets/authors")
     authors, author_files = get_files_for_authors(author_folder)
 
     siamese_network = Verifier().to(device)
+    siamese_network.eval()
 
     #load model
-    siamese_network.load_state_dict(torch.load("siamese_network.pt"))
+    siamese_network.load_state_dict(torch.load("/Users/prestonraab/GitHub/Ling/AuthorshipVerification/code/siamese_network.pt"))
 
 
-    N = 20
+    N = 10
 
     correct = 0
     total = 0
@@ -113,9 +112,10 @@ def main():
         correct, total = accuracy_for_N_authors({author: author_files[author] for author in n_random_authors}, device, siamese_network)
         print(f"Accuracy for {N} authors: {correct / total:.4f}")
         accuracies.append(correct / total)
-    standard_deviation = torch.std(torch.tensor(accuracies))
+        print(f"Accuracy so far: {sum(accuracies) / len(accuracies):.4f}")
+        standard_deviation = torch.std(torch.tensor(accuracies))
+        print(f"Standard deviation: {standard_deviation:.4f}")
     print(f"Accuracy for {len(authors)} authors: {correct / total:.4f}")
-    print(f"Standard deviation: {standard_deviation:.4f}")
 
 
 if __name__ == "__main__":
