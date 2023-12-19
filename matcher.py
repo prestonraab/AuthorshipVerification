@@ -27,7 +27,7 @@ class Matcher(Dataset):
         self.test = test
 
     def __len__(self):
-        return BATCH_SIZE if self.test else len(self.train_files)
+        return BATCH_SIZE * 4 if self.test else len(self.train_files)
 
     def __getitem__(self, index):
         file = random.choice(self.test_files) if self.test else self.train_files[index]

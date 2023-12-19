@@ -76,7 +76,11 @@ def train(model: Verifier, simple_model, device, train_loader, optimizer, optimi
                   f"\tLoss: {loss.item():.4f}"
                   f"\tLoss 2: {loss2.item():.4f}"
                   f"\tSimple_params: {list(simple_model.parameters())[0].item():.4f}"
+                  f"\tSimple_bias: {list(simple_model.parameters())[1].item():.4f}"
                   f"\t{'#' * int(100 * loss.item())}")
+        if batch_idx % (LOG_INTERVAL * 10) == 0:
+            print(f"simple_outputa: {simple_output.reshape(-1)[:8]}")
+            print(f"targets: {targets[:8]}")
     print("########################\n" * 3)
     print(f"Finished in {time.time() - start:.4f} seconds")
     print("########################\n" * 3)
