@@ -32,7 +32,7 @@ def accuracy_for_N_authors(author_files, device, siamese_network):
             average_distances_for_authors.append((average, standard_deviation))
 
     for index, author in enumerate(author_vects):
-        if index % 2 == 0:
+        if index % (len(author_vects)//10) == 0:
             print(index)
         for vect in author_vects[author]:
             total += 1
@@ -40,7 +40,7 @@ def accuracy_for_N_authors(author_files, device, siamese_network):
             # subtract the average distance for each author
             # similarities = [similarity - average_distances_for_authors[i][0] for i, similarity in enumerate(similarities)]
             # divide by the standard deviation for each author
-            # similarities = [abs(similarity / average_distances_for_authors[i][1]) for i, similarity in enumerate(similarities)]
+            # similarities = [similarity / average_distances_for_authors[i][1] for i, similarity in enumerate(similarities)]
 
             if similarities.index(max(similarities)) == index:
                 correct += 1
@@ -80,7 +80,6 @@ def get_author_vects(author_files, device, siamese_network):
                 output1, output2 = siamese_network(fft.unsqueeze(0).to(device), fft.unsqueeze(0).to(device))
                 author_vects[author] = torch.cat((author_vects[author], output1.squeeze(0)))
 
-        print(f"Author {author} has {len(author_vects[author])} vectors")
     return author_vects
 
 
@@ -103,16 +102,20 @@ def main():
     siamese_network.load_state_dict(torch.load("siamese_network.pt"))
 
 
-    N = 10
+    N = 20
 
     correct = 0
     total = 0
-    for epoch in range(10):
+    accuracies = []
+    for epoch in range(100):
         print(f"Epoch {epoch}")
         n_random_authors = random.sample(authors, N)
         correct, total = accuracy_for_N_authors({author: author_files[author] for author in n_random_authors}, device, siamese_network)
         print(f"Accuracy for {N} authors: {correct / total:.4f}")
+        accuracies.append(correct / total)
+    standard_deviation = torch.std(torch.tensor(accuracies))
     print(f"Accuracy for {len(authors)} authors: {correct / total:.4f}")
+    print(f"Standard deviation: {standard_deviation:.4f}")
 
 
 if __name__ == "__main__":
